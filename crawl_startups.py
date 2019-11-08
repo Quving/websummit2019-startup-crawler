@@ -14,7 +14,7 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(ch)
 
 websummit_startup_url = 'https://websummit.com/featured-startups'
-output = 'websummit2019startups.json'
+output_filename = 'websummit2019startups.json'
 
 # WebDriver configuration
 driver = webdriver.Chrome()
@@ -39,17 +39,18 @@ logger.info("Start crawling startups...")
 companies = []
 
 names = driver.find_elements_by_css_selector('div.algolia-hit-box .algolia-text-block h4')
-metas = driver.find_elements_by_css_selector('div.algolia-hit-box .algolia-text-block span')
+metas = driver.find_elements_by_css_selector('div.algolia-hit-box .algolia-text-block span.text-span')
 logos = driver.find_elements_by_css_selector('div.algolia-hit-box .algolia-img-block img')
 descriptions = driver.find_elements_by_css_selector('div.algolia-hit-box .algolia-text-block div span')
 listitems = driver.find_elements_by_class_name('ais-InfiniteHits-item')
 
+assert len(names) == len(metas) == len(logos) == len(descriptions) == len(listitems)
 for name, meta, logo, description, listitem in zip(names, metas, logos, descriptions, listitems):
     driver.execute_script("arguments[0].scrollIntoView();", listitem)
     time.sleep(0.5)
     listitem.click()
     time.sleep(0.5)
-
+    print(meta.text)
     # Crawl data metadata
     company = {
         'name': name.text,
@@ -68,7 +69,6 @@ for name, meta, logo, description, listitem in zip(names, metas, logos, descript
             'div.modal-social-links span.m-{} a'.format(social_type)).get_attribute('href')
         company[social_type] = social_url
 
-
     # Close popups
     driver.find_element_by_class_name('modal__close-btn').click()
 
@@ -78,5 +78,5 @@ for name, meta, logo, description, listitem in zip(names, metas, logos, descript
 driver.quit()
 
 logger.info("Export to json file.")
-with open(output, "w") as file:
+with open(output_filename, "w") as file:
     json.dump(companies, file, indent=True)
