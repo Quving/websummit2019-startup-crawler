@@ -9,7 +9,7 @@ Crawl every startup that participated at the websummit 2019 frome the [official 
 
 # Usage
 ```python
-python crawl_startups.py
+python crawl_websummit_startups.py
 ```
 
 # Output
