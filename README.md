@@ -1,5 +1,5 @@
 # Websummit2019-Startup-Crawler
-Crawl every startup that participated at the websummit 2019 frome the [official website](https://websummit.com/featured-startups)
+Crawl every startup that participated at the websummit 2019 from the [official website](https://websummit.com/featured-startups)
 
 
 ![](https://i.imgur.com/JbGUV54.jpg)
