@@ -14,21 +14,21 @@ python crawl_websummit_startups.py
 
 # Output
 ```json 
- {
-  "name": "BYHOURS",
-  "description": "First international online booking platform and App that allows to book microstays in more than 3000 hotels wordwide for 3, 6 and 12\u2026",
-  "country": "unknown",
-  "sector": "unknown",
-  "logo": "https://s3-eu-west-1.amazonaws.com/avenger.cilabs.net/production/logos/medium/bafc073bf62e3de0a79deedefd55b6e96f02a61a.png?1569918108",
-  "websummit": [
-   "2019"
-  ],
-  "linkedin": "https://www.linkedin.com/company/byhours-com",
-  "twitter": "https://twitter.com/BYHOURS",
-  "instagram": "https://instagram.com/byhours",
-  "facebook": "https://www.facebook.com/byhours",
-  "angellist": "https://angel.co/company/byhours-com",
-  "crunchbase": "https://www.crunchbase.com/organization/byhours-com",
-  "website": "https://www.byhours.com/en.html"
- }
+{
+ "name": "4GIFTERS",
+ "description": "Platform and White label plug-in solution, allowing users to Gift/Group Gift any item in a simple and engaging way from any e-commerce",
+ "country": "Italy",
+ "sector": "eCommerce & retail",
+ "logo": "https://s3-eu-west-1.amazonaws.com/avenger.cilabs.net/production/logos/medium/659594b93c6b286888d8c8bd02fadf1d5600a3da.png?1535462673",
+ "websummit": [
+  "2019"
+],
+ "linkedin": "https://www.linkedin.com/company/4gifters",
+ "twitter": "https://twitter.com/4gifters",
+ "instagram": "https://instagram.com/4gifters",
+ "facebook": "https://www.facebook.com/4gifters/?fref=ts",
+ "angellist": "https://angel.co/4gifters",
+ "crunchbase": "https://www.crunchbase.com/organization/4gifters",
+ "website": "http://www.4gifters.com/"
+}
 ```
