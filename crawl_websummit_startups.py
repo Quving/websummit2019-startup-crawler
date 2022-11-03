@@ -1,9 +1,16 @@
 import json
 import logging
+import pickle
 import time
 
-from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException
+from selenium.webdriver import DesiredCapabilities
+# from selenium import webdriver
+from seleniumwire import webdriver
+from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException, \
+    ElementClickInterceptedException
+from selenium.webdriver.common.by import By
+
+from util import extract_json_from_string, extract_network_requests_from_driver, extract_data_from_request
 
 logger = logging.getLogger('WebSummit2019StartupCrawler')
 ch = logging.StreamHandler()
@@ -14,73 +21,70 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(ch)
 
 websummit_startup_url = 'https://websummit.com/featured-startups'
-output_filename = 'websummit2019startups.json'
+output_filename = 'websummit2022startups.json'
+
 
 def crawl_startups():
     # WebDriver configuration
-    driver = webdriver.Chrome()
+
+    driver = webdriver.Chrome(executable_path='chromedriver/chromedriver')
     driver.implicitly_wait(10)
 
     # Start crawling
-    driver.get(websummit_startup_url);
+    driver.get(websummit_startup_url)
 
-    # Click on 'load-more' if possible
-    logger.info("Click on 'Show More' as much as possible...")
+    # Agree to cookies
+    driver.find_element(
+        By.CSS_SELECTOR,
+        'div.civic_cookie__grid_body div[data-test-id="cookie-acceptance-btn"]'
+    ).click()
+
     next_page_available = True
+    # next_page_available = False
+
+    # extract_network_requests_from_driver(driver)
+
+    company_list = []
     while next_page_available:
+        # Wait for the page to load and perform requests before scraping
+        time.sleep(5)
+
+        # Extract network requests
+        data = extract_data_from_request(network_requests=driver.requests)
+
+        company_list.extend(data)
+
         try:
-            driver.find_element_by_class_name('ais-InfiniteHits-loadMore').click()
-            time.sleep(0.5)
-        except NoSuchElementException:
+            # Scroll down
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+
+            # Click on next page
+            btn_next_page = driver.find_element(By.CSS_SELECTOR, 'button[aria-label="Go to next page"]')
+            btn_next_page.click()
+
+        except NoSuchElementException as e:
+            print("Element not found")
             next_page_available = False
-        except ElementNotInteractableException:
+        except ElementClickInterceptedException as e:
+            # Usually thrown after last page is reached
+            print("Last page reached")
             next_page_available = False
-
-    logger.info("Start crawling startups...")
-    companies = []
-
-    names = driver.find_elements_by_css_selector('div.algolia-hit-box .algolia-text-block h4')
-    metas = driver.find_elements_by_css_selector('div.algolia-hit-box .algolia-text-block span.text-span')
-    logos = driver.find_elements_by_css_selector('div.algolia-hit-box .algolia-img-block img')
-    descriptions = driver.find_elements_by_css_selector('div.algolia-hit-box .algolia-text-block div span')
-    listitems = driver.find_elements_by_class_name('ais-InfiniteHits-item')
-
-    assert len(names) == len(metas) == len(logos) == len(descriptions) == len(listitems)
-    for name, meta, logo, description, listitem in zip(names, metas, logos, descriptions, listitems):
-        driver.execute_script("arguments[0].scrollIntoView();", listitem)
-        time.sleep(0.5)
-        listitem.click()
-        time.sleep(0.5)
-        print(meta.text)
-        # Crawl data metadata
-        company = {
-            'name': name.text,
-            'description': description.text,
-            'country': meta.text.split("|")[0].strip() if "|" in meta.text else "unknown",
-            'sector': meta.text.split("|")[1].strip() if "|" in meta.text else "unknown",
-            'logo': logo.get_attribute('src'),
-            'websummit': ['2019']
-        }
-
-        # Crawl details
-        socials = driver.find_elements_by_css_selector('div.modal-social-links span.m-social')
-        for social in socials:
-            social_type = social.get_attribute('class').split('-')[-1]
-            social_url = driver.find_element_by_css_selector(
-                'div.modal-social-links span.m-{} a'.format(social_type)).get_attribute('href')
-            company[social_type] = social_url
-
-        # Close popups
-        driver.find_element_by_class_name('modal__close-btn').click()
-
-        companies.append(company)
-        logger.info("Companies crawled: {}".format(len(companies)))
+        except ElementNotInteractableException as e:
+            print("Element not interactable")
+            next_page_available = False
+        except Exception as e:
+            print("Unknown error: {}".format(e))
 
     driver.quit()
 
     logger.info("Export to json file.")
-    with open(output_filename, "w") as file:
-        json.dump(companies, file, indent=True)
+
+    # Remove duplicate dicts
+    company_list = [json.loads(j) for j in set([json.dumps(d) for d in company_list])]
+
+    with open(output_filename, 'w') as file:
+        json.dump(company_list, file, indent=True)
+
 
 if __name__ == '__main__':
     crawl_startups()
